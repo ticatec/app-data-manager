@@ -1,0 +1,16 @@
+{
+  "name": "@ticatec/app-data-manager",
+  "version": "0.7.0",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "build": "npm run clean && tsc && cp ./package.json ./dist/",
+    "publish:public": "cp *.md ./dist && cd ./dist && npm publish --access public"
+  },
+  "devDependencies": {
+    "@ticatec/enhanced-utils": "^1.0.1",
+    "@ticatec/app-data-service": "^0.7.0"
+  }
+}
