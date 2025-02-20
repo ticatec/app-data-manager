@@ -1,6 +1,6 @@
 {
   "name": "@ticatec/app-data-manager",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
@@ -11,6 +11,6 @@
   },
   "devDependencies": {
     "@ticatec/enhanced-utils": "^1.0.1",
-    "@ticatec/app-data-service": "^0.7.0"
+    "@ticatec/app-data-service": "^0.7.4"
   }
 }

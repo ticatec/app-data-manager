@@ -1,4 +1,4 @@
-import BaseDataManager, {DataConvert} from "./BaseDataManager";
+import BaseDataManager from "./BaseDataManager";
 import type {CheckEqual} from "./BaseDataManager";
 import type {CommonPaginationDataService} from "@ticatec/app-data-service";
 import {utils} from "@ticatec/enhanced-utils";
@@ -6,6 +6,8 @@ import {utils} from "@ticatec/enhanced-utils";
 export default abstract class CommonPaginationDataManager<T extends CommonPaginationDataService> extends BaseDataManager<T> {
 
     private static rowsCount: number = 25;
+    private static rowsKey: string = 'rows';
+    private static pageNoKey: string = 'page';
 
     #criteria: any;
     #pageCount: number = 1;
@@ -29,6 +31,13 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
 
     static setRowsPerPage(value: number):void {
         CommonPaginationDataManager.rowsCount = value;
+    }
+
+    static setRowsKey(value: string): void {
+        CommonPaginationDataManager.rowsKey = value
+    }
+    static setPageNoKey(value: string): void {
+        CommonPaginationDataManager.pageNoKey = value;
     }
 
     /**
@@ -66,8 +75,8 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
         if (pageNo != this.#pageNo) {
             this.#pageNo = pageNo;
         }
-        criteria.page = pageNo;
-        criteria.rows = this.#rows;
+        criteria[CommonPaginationDataManager.pageNoKey] = pageNo;
+        criteria[CommonPaginationDataManager.rowsKey] = this.#rows;
         let result = await this.searchViaProxy(criteria);
         this.processDataResult(result);
         this.#pageCount = Math.floor((result.count -1) / criteria.rows) + 1;
@@ -76,6 +85,11 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
         this.#criteria = utils.clone(criteria);
     }
 
+    /**
+     * 处理查询返回的结果
+     * @param result
+     * @protected
+     */
     protected abstract processDataResult(result: any): void;
 
     /**
@@ -102,6 +116,13 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
      */
     async initialize(): Promise<void> {
         await this.searchData(this.service.buildCriteria(this.tagData));
+    }
+
+    /**
+     * 重置查询条件
+     */
+    resetCriteria(): any {
+        return this.service.buildCriteria(this.tagData);
     }
 
     /**
