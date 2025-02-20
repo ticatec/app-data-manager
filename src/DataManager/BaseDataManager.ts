@@ -26,6 +26,12 @@ export default abstract class BaseDataManager<T extends CommonDataService> {
         this.tagData = options?.tagData;
     }
 
+    /**
+     * 构造新条目
+     */
+    async buildNewEntry(params: any): Promise<any> {
+        return {...params}
+    }
 
     /**
      * 保存一条记录到数据库，并加入到本地集合
