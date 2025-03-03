@@ -1,7 +1,8 @@
 {
   "name": "@ticatec/app-data-manager",
-  "version": "0.7.2",
+  "version": "1.0.2",
   "type": "module",
+  "description": "A set of data manager classes for handling CRUD operations and paginated data retrieval via HTTP requests, built on a hierarchical structure with base, common, and stack data manager implementations.",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -9,8 +10,27 @@
     "build": "npm run clean && tsc && cp ./package.json ./dist/",
     "publish:public": "cp *.md ./dist && cd ./dist && npm publish --access public"
   },
+  "keywords": [
+    "data-manager",
+    "http",
+    "crud",
+    "pagination",
+    "data-service",
+    "api",
+    "typescript"
+  ],
   "devDependencies": {
     "@ticatec/enhanced-utils": "^1.0.1",
-    "@ticatec/app-data-service": "^0.7.4"
-  }
+    "@ticatec/app-data-service": "～1.0.2"
+  },
+  "repository": {
+    "type": "https",
+    "url": "https://github.com/henryfeng/app-data-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/henryfeng/app-data-manager/issues"
+  },
+  "homepage": "https://github.com/henryfeng/app-data-manager",
+  "author": "Henry Feng",
+  "license": "MIT"
 }

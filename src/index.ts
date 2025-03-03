@@ -1,4 +1,4 @@
 import '@ticatec/enhanced-utils';
-import {BaseDataManager, PaginationDataManager, StackDataManager, FullListDataManager} from "./DataManager";
+import {BaseDataManager, PagedDataManager, StackDataManager, FullListDataManager} from "./DataManager";
 
-export {BaseDataManager, PaginationDataManager, StackDataManager, FullListDataManager}
+export {BaseDataManager, PagedDataManager, StackDataManager, FullListDataManager}

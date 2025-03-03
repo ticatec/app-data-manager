@@ -1,11 +1,8 @@
 import {CheckEqual} from "./BaseDataManager";
-import {CommonPaginationDataService} from "@ticatec/app-data-service";
-import CommonPaginationDataManager from "./CommonPaginationDataManager";
+import {PagingDataService} from "@ticatec/app-data-service";
+import CommonPagedDataManager from "./CommonPagedDataManager";
 
-export default class StackDataManager<T extends CommonPaginationDataService> extends CommonPaginationDataManager<T> {
-
-    #total: number;
-    #hasMore: boolean;
+export default class StackDataManager<T extends PagingDataService> extends CommonPagedDataManager<T> {
 
     constructor(service:T, checkEqual: CheckEqual, options: any = null) {
         super(service, checkEqual, options);

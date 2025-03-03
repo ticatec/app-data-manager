@@ -7,7 +7,7 @@ export default abstract class BaseDataManager<T extends CommonDataService> {
 
     private _list: Array<any>;
     protected fromTop: boolean = true;
-    protected readonly service: T;
+    readonly service: T;
     protected readonly checkEqual: CheckEqual;
     protected readonly convert: DataConvert;
     protected readonly tagData: any;
@@ -29,8 +29,8 @@ export default abstract class BaseDataManager<T extends CommonDataService> {
     /**
      * 构造新条目
      */
-    async buildNewEntry(params: any): Promise<any> {
-        return {...params}
+    async buildNewEntry(): Promise<any> {
+        return this.service.buildNewEntry(this.tagData);
     }
 
     /**

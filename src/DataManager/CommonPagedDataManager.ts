@@ -1,9 +1,9 @@
 import BaseDataManager from "./BaseDataManager";
 import type {CheckEqual} from "./BaseDataManager";
-import type {CommonPaginationDataService} from "@ticatec/app-data-service";
+import type {PagingDataService} from "@ticatec/app-data-service";
 import {utils} from "@ticatec/enhanced-utils";
 
-export default abstract class CommonPaginationDataManager<T extends CommonPaginationDataService> extends BaseDataManager<T> {
+export default abstract class CommonPagedDataManager<T extends PagingDataService> extends BaseDataManager<T> {
 
     private static rowsCount: number = 25;
     private static rowsKey: string = 'rows';
@@ -25,19 +25,32 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
     protected constructor(service:T, checkEqual: CheckEqual, options: any = null) {
         super(service, checkEqual, options);
         this.list = [];
-        this.#rows = CommonPaginationDataManager.rowsCount;
+        this.#rows = CommonPagedDataManager.rowsCount;
         this.#criteria = service.buildCriteria(this.tagData);
     }
 
+    /**
+     * 设置分页查询时每页行数的属性名称
+     * @param value
+     */
     static setRowsPerPage(value: number):void {
-        CommonPaginationDataManager.rowsCount = value;
+        CommonPagedDataManager.rowsCount = value;
     }
 
+    /**
+     * 设置默认的每页行数
+     * @param value
+     */
     static setRowsKey(value: string): void {
-        CommonPaginationDataManager.rowsKey = value
+        CommonPagedDataManager.rowsKey = value
     }
+
+    /**
+     * 设置分页查询时候页吗对应的属性名称
+     * @param value
+     */
     static setPageNoKey(value: string): void {
-        CommonPaginationDataManager.pageNoKey = value;
+        CommonPagedDataManager.pageNoKey = value;
     }
 
     /**
@@ -46,9 +59,6 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
      */
     async remove(item:any):Promise<void> {
         await super.remove(item);
-        if (this.list.length < CommonPaginationDataManager.rowsCount / 2) {
-            await this.refresh();
-        }
     }
 
     /**
@@ -75,8 +85,8 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
         if (pageNo != this.#pageNo) {
             this.#pageNo = pageNo;
         }
-        criteria[CommonPaginationDataManager.pageNoKey] = pageNo;
-        criteria[CommonPaginationDataManager.rowsKey] = this.#rows;
+        criteria[CommonPagedDataManager.pageNoKey] = pageNo;
+        criteria[CommonPagedDataManager.rowsKey] = this.#rows;
         let result = await this.searchViaProxy(criteria);
         this.processDataResult(result);
         this.#pageCount = Math.floor((result.count -1) / criteria.rows) + 1;
@@ -101,21 +111,14 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
     }
 
     /**
-     * 重新设置每页的行数
+     * 重新设置每页的行数，并从首页查询
      * @param value
      */
     async setRowsPage(value: number): Promise<void> {
         let times = value / this.#rows;
         this.#rows = value;
-        this.#pageNo = Math.floor(((this.#pageNo||1) - 1) / times) + 1;
+        this.#pageNo = 1;
         await this.searchData(this.#criteria, this.#pageNo);
-    }
-
-    /**
-     * 初始化数据管理器
-     */
-    async initialize(): Promise<void> {
-        await this.searchData(this.service.buildCriteria(this.tagData));
     }
 
     /**
@@ -181,7 +184,5 @@ export default abstract class CommonPaginationDataManager<T extends CommonPagina
     get count(): number {
         return this.#count;
     }
-
-
 
 }
