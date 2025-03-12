@@ -18,12 +18,12 @@ export default abstract class CommonPagedDataManager<T extends PagingDataService
     /**
      *
      * @param service
-     * @param checkEqual
+     * @param keyField
      * @param options
      * @protected
      */
-    protected constructor(service:T, checkEqual: CheckEqual, options: any = null) {
-        super(service, checkEqual, options);
+    protected constructor(service:T, keyField: string | CheckEqual, options: any = null) {
+        super(service, keyField, options);
         this.list = [];
         this.#rows = CommonPagedDataManager.rowsCount;
         this.#criteria = service.buildCriteria(this.tagData);

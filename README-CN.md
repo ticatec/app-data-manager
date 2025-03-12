@@ -1,138 +1,83 @@
-# Data Manager
+# 数据管理器
 
-## BaseDataManager
-BaseDataManager是一个通用类，提供了用于管理数据列表的基本CRUD操作。它定义了在本地列表和数据库中保存、删除和修改数据的方法，并通过指定的CommonDataService。BaseDataManager被设计为针对特定用例进行扩展和实现。
+[English](./README.md)
 
+这个类库提供了一系列数据管理器，用于简化前端应用中数据的管理和操作。它主要包含以下几个核心类：
 
-### 用法
-BaseDataManager类可以被扩展和实现来管理任何类型的数据。
+### 分项介绍
 
-```typescript
-import BaseDataManager from "./BaseDataManager";
-import MyDataService from "./MyDataService";
+1. `BaseDataManager` **(基础数据管理器)**：
 
-export default class MyDataManager extends BaseDataManager<MyDataService> {
+* 这是一个抽象基类，用于管理数据集合。
+* 它提供了一系列通用的数据操作方法，如保存、删除、替换和追加数据。
+* 它依赖于 `CommonDataService`，用于与后端数据服务进行交互。
+* 它通过 `checkEqual` 函数来比较数据项的相等性，并允许通过 `convert` 函数进行数据转换。
+* 它适用于管理任何类型的数据集合，但需要子类继承并实现特定的数据服务交互逻辑。
 
-    constructor(service: MyDataService) {
-        super(service, (e1, e2) => e1.id === e2.id);
-    }
-}
+2. `FullListDataManager` **(完整列表数据管理器)**：
 
-```
+* 它继承自 `BaseDataManager`，专门用于管理完整的数据列表。
+* 它提供了一个 `loadData` 方法，用于从后端数据服务一次性加载所有数据。
+* 它适用于需要一次性加载完整数据集的场景，例如下拉列表或静态数据展示。
 
-### 构造函数
-BaseDataManager构造函数需要以下参数：
+3. `CommonPagedDataManager` **(通用分页数据管理器)**：
 
-**service** - 用于处理实际CRUD操作的CommonDataService子类的实例
-**checkEqual** - 一个函数，它接受两个项并返回一个布尔值，指示它们是否相等。该函数用于识别需要更新或删除的本地列表中的项。
-此外，还可以提供可选的**convert**参数以将返回的数据转换为添加到本地列表中。
+* 它继承自 `BaseDataManager`，用于管理分页数据。
+* 它提供了一系列方法，用于分页查询数据、设置分页参数和刷新数据。
+* 它依赖于 `PagingDataService`，用于与支持分页的后端数据服务交互。
+* 它通过 `processDataResult` 抽象方法，要求子类实现特定的数据处理逻辑。
+* 它适用于需要分页加载数据的场景，例如表格或列表展示。
 
-### 方法
+4. `PagedDataManager` **(分页数据管理器)**：
 
-| 名称 | 修饰符       | 参数                         | 返回值 | 说明         | 备注 |
-|---|-----------|----------------------------|---|------------|----|
-| save   | public    | data:any<br/>isNew:boolean | 无   |            | 异步 |
-| remove | public    | data:any                   | 无   |            | 异步 |
-| removeItem   | protected | item:any                   | 无   | 从列表中删除一条记录 |  |
-| append | protected    | item:any                  | 无   | 新增一条记录到列表头 |  |
-| save   | public    | data:any<br/>isNew:boolean | 无   |            | 异步 |
-| remove | public    | data:any                   | 无   |            | 异步 |
+* 它继承自 CommonPagedDataManager，是一个具体的分页数据管理器。
+* 它简化了 CommonPagedDataManager 的使用，并提供了更直接的属性访问方式，使得开发者能够更方便地获取分页信息。
+* 它重写了 processDataResult 方法，直接将后端返回的数据列表设置为本地数据集合。
+* 它通过 pageCount 和 pageNo 属性，提供了更方便的分页信息访问方式。
+* 它适用于大多数分页数据管理的场景，提供了简洁易用的API。
 
+5. `StackDataManager` **(堆叠式分页数据管理器)**：
 
-### 属性
-| 名称 | 修饰符                            | 类型               | 说明         | 备注 |
-|---|--------------------------------|------------------|------------|----|
-| list | public(get)<br/>protected(set) | Array&lt;any&gt; | 无  |             |
+* 它继承自 CommonPagedDataManager，用于管理堆叠式分页数据。
+* 它提供了 loadMore 和 hasMore 方法，用于实现堆叠式加载更多数据的逻辑。
+* 它在 processDataResult 方法中使用 union 方法，将新加载的数据合并到现有数据集合中，避免重复数据。
+* 它适用于需要实现“加载更多”或“无限滚动”等堆叠式分页加载的场景。
 
+### 用途：
+这些数据管理器类提供了一种结构化的方式来管理前端应用中的数据，简化了数据加载、存储、更新和删除等操作。它们抽象了与后端数据服务的交互细节，使得前端开发者可以更专注于业务逻辑的实现。
+### 用法：
+* 首先，需要根据具体的数据服务类型，创建相应的数据服务类（例如 `MyDataService`、`MyFullListDataService`、`MyPagingDataService`）。
+* 然后，继承相应的数据管理器类（例如 `BaseDataManager`、`FullListDataManager`、`PagedDataManager`、`StackDataManager`），并实现必要的方法（例如 processDataResult）。
+* 在创建数据管理器实例时，需要传入数据服务实例和 `checkEqual` 函数。
+* 通过调用数据管理器提供的方法，可以加载、保存、删除和更新数据。
+* 对于分页数据管理器，可以通过设置查询条件、页码和每页行数，来实现分页查询。
+* 对于堆叠数据管理器，可以使用`loadMore`方法和`hasMore`方法实现懒加载。
 
+### 总体而言
+这个类库提供了一套灵活且可扩展的数据管理解决方案，可以根据不同的数据管理需求选择合适的管理器类。它简化了前端数据管理的复杂性，提高了开发效率和代码质量。
 
-## Common Pagination Data Manager
-这个模块提供了一个CommonPaginationDataManager类，它继承了BaseDataManager类。它用于管理可以在分页表格上显示的数据。
+### 关联文档
 
-### 用法
-要使用这个模块，首先导入CommonPaginationDataManager类和任何必需的依赖项：
+* [基础数据管理器](./README-BASE-CN.md)
+* [全数据集管理器](./README-FULL-CN.md)
+* [分页数据集合管理器](./README-PAGED-CN.md)
 
-```typescript
-import {BaseDataManager, DataConvert} from "@ticatec/app-data-manager";
-import type {CheckEqual} from "@ticatec/data-manager";
-import type {CommonPaginationDataService} from "@ticatec/app-data-manager";
-import {utils} from "@ticatec/enhanced-utils";
-```
-然后，扩展CommonPaginationDataManager类并实现processDataResult方法：
+## 依赖
 
-```typescript
-export default abstract class CommonPaginationDataManager<T extends CommonPaginationDataService> extends BaseDataManager<T> {
+* [app-data-service](https://www.npmjs.com/package/@ticatec/app-data-service)
 
-    constructor(service:T, checkEqual: CheckEqual, convert?: DataConvert) {
-        super(service, checkEqual, convert);
-    }
-}
+## 贡献
 
-```
+欢迎提交 issue 和 pull request。
 
-### 方法
+## 版权信息
 
-| 名称 | 修饰符       | 参数                       | 返回值 | 说明                          | 备注  |
-|---|-----------|--------------------------|---|-----------------------------|-----|
-| setRowsPerPage   | public    | value:number             | 无   | 设置分页的最多行数                   |     |
-| searchData | public    | criteria: any, pageNo: number = 1 | 无   | 基于指定的搜索条件和页码搜索数据            | 异步  |
-| setPageNo   | public    | value: number            | 无   | 设置新的页吗                      |     |
-| initialize | public    | options:any              | 无   | 初始化分页数据管理器，options是初始化的条件   | 异步  |
-| resetSearch   | public    | 无                        | 无   | 重置查询条件                      | 异步  |
-| search | public    | criteria:any             | 无   | 根据条件查询(废弃，新版更改为setCriteria) | 异步  |
-| setCriteria | public    | criteria:any             | 无   | 设置查询条件                      | 异步  |
-| refresh | public    |                          | 无   | 更加当前条件重新读取                  | 异步  |
-| getPageNo | protected |                          | 无   | 获取当前页吗          |   |
-| getPageCount | protected |                          | 无   | 获取当前总页数  |   |
+Copyright © 2023 Ticatec。保留所有权利。
 
+本类库遵循 MIT 许可证发布。有关许可证的详细信息，请参阅 [LICENSE](LICENSE) 文件。
 
-### 属性
-| 名称 | 修饰符                       | 类型  | 说明         | 备注 |
-|---|---------------------------|-----|------------|----|
-| criteria | public | 对象  | 查询条件  |      只读       |
+## 联系方式
 
+huili.f@gmail.com
 
-## PaginationDataManager
-PaginationDataManager 是一个实例类，它扩展了 CommonPaginationDataManager 实现从服务器分页读取数据。
-
-### 属性
-| 名称 | 修饰符                       | 类型  | 说明         | 备注 |
-|---|---------------------------|-----|------------|----|
-| pageNo | public | 数字  | 当前页数  |      只读       |
-| pageCount | public | 数字  | 总页数  |      只读       |
-
-
-## StackDataManager
-
-StackDataManager 是一个实例类，它扩展了 CommonPaginationDataManager 并添加了从服务器加载更多数据的功能。
-
-### 使用方法
-
-```typescript
-import {StackDataManager} from "@ticatec/app-data-manager";
-import type {CheckEqual} from "@ticatec/app-data-manager";
-import type {CommonPaginationDataService} from "@ticatec/app-data-manager";
-
-class ExampleDataManager extends StackDataManager<CommonPaginationDataService> {
-    constructor(service: CommonPaginationDataService, checkEqual: CheckEqual) {
-        super(service, checkEqual);
-    }
-}
-```
-
-### API
-
-### constructor
-**StackDataManager(service: T, checkEqual: CheckEqual, convert?: DataConvert)**
-构造一个新的 StackDataManager 实例。  
-**service** - 用于查询数据的服务。  
-**checkEqual** - 用于比较两个对象的函数。  
-**convert** - 用于将服务器上的数据转换的函数。  
-
-### 方法
-
-| 名称 | 修饰符    | 参数  | 返回值 | 说明        | 备注  |
-|---|--------|-----|---|-----------|-----|
-| loadMore   | public | -   | 无   | 抓取更多的行    |  异步   |
-| hasMore | public | -   | 无   | 是否还有更多的记录 |   |
-
+https://github.com/henryfeng/app-data-manager

@@ -1,11 +1,12 @@
-import {CheckEqual} from "./BaseDataManager";
+
 import {PagingDataService} from "@ticatec/app-data-service";
 import CommonPagedDataManager from "./CommonPagedDataManager";
+import {CheckEqual} from "./BaseDataManager";
 
 export default class StackDataManager<T extends PagingDataService> extends CommonPagedDataManager<T> {
 
-    constructor(service:T, checkEqual: CheckEqual, options: any = null) {
-        super(service, checkEqual, options);
+    constructor(service:T, keyField: string | CheckEqual, options: any = null) {
+        super(service, keyField, options);
     }
 
 

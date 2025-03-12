@@ -1,145 +1,85 @@
 # Data Manager
 
-## BaseDataManager
-The BaseDataManager class is a generic class that provides basic CRUD operations for managing a list of data. It defines methods for saving, removing, and modifying data in a local list and database through a specified CommonDataService. The BaseDataManager is designed to be extended and implemented for specific use cases.
+[中文文档](./README-CN.md)
 
-### Usage
-The BaseDataManager class can be extended and implemented to manage any type of data.
+This library provides a series of data managers to simplify data management and operations in frontend applications. It primarily includes the following core classes:
 
-```typescript
-import BaseDataManager from "./BaseDataManager";
-import MyDataService from "./MyDataService";
+### Detailed Introduction
 
-export default class MyDataManager extends BaseDataManager<MyDataService> {
+1. `BaseDataManager` **(Base Data Manager)**:
 
-    constructor(service: MyDataService) {
-        super(service, (e1, e2) => e1.id === e2.id);
-    }
-}
+* This is an abstract base class for managing data collections.
+* It provides a series of common data operation methods, such as saving, deleting, replacing, and appending data.
+* It relies on `CommonDataService` to interact with backend data services.
+* It uses the `checkEqual` function to compare the equality of data items and allows data transformation via the `convert` function.
+* It is suitable for managing any type of data collection but requires subclasses to inherit and implement specific data service interaction logic.
 
-```
+2. `FullListDataManager` **(Full List Data Manager)**:
 
-### Constructor
-The BaseDataManager constructor requires the following parameters:
+* It inherits from `BaseDataManager` and is specifically designed to manage complete data lists.
+* It provides a `loadData` method to load all data from the backend data service in a single request.
+* It is suitable for scenarios where an entire dataset needs to be loaded at once, such as dropdown lists or static data displays.
 
-**service** - an instance of a CommonDataService subclass for handling the actual CRUD operations  
-**checkEqual** - a function that takes two items and returns a boolean indicating whether they are equal. This function is used to identify items in the local list that need to be updated or removed.
-Additionally, an optional convert parameter can be provided to convert the returned data before adding it to the local list.
+3. `CommonPagedDataManager` **(Common Paged Data Manager)**:
 
-### API
+* It inherits from `BaseDataManager` and is used to manage paginated data.
+* It provides a series of methods for querying paginated data, setting pagination parameters, and refreshing data.
+* It depends on `PagingDataService` to interact with backend data services that support pagination.
+* It requires subclasses to implement specific data processing logic through the abstract `processDataResult` method.
+* It is suitable for scenarios requiring paginated data loading, such as tables or list displays.
 
-### public methods
-**save(data: any, isNew: boolean): Promise<void>**  
-saves data to the database and updates the local list. The isNew parameter indicates whether the data is new or an update to an existing item.  
+4. `PagedDataManager` **(Paged Data Manager)**:
 
-**remove(item: any): Promise<void>**  
-removes the specified item from the database and the local list.  
+* It inherits from `CommonPagedDataManager` and serves as a concrete paginated data manager.
+* It simplifies the use of `CommonPagedDataManager` and provides more direct property access, making it easier for developers to retrieve pagination information.
+* It overrides the `processDataResult` method to directly set the data list returned from the backend as the local data collection.
+* It provides convenient access to pagination information through the `pageCount` and `pageNo` properties.
+* It is suitable for most paginated data management scenarios, offering a simple and easy-to-use API.
 
-**list: Array<any>**  
-returns a copy of the current local list.
+5. `StackDataManager` **(Stacked Paged Data Manager)**:
 
-### protected methods
-**removeItem(item: any): void**  
-removes the specified item from the local list.  
+* It inherits from `CommonPagedDataManager` and is used to manage stacked paginated data.
+* It provides `loadMore` and `hasMore` methods to implement logic for stacking and loading more data.
+* In the `processDataResult` method, it uses the `union` method to merge newly loaded data into the existing data collection, avoiding duplicates.
+* It is suitable for scenarios requiring "load more" or "infinite scrolling" with stacked paginated loading.
 
-**append(item: any): void**  
-adds the specified item to the beginning of the local list.  
+### Purpose:
+These data manager classes provide a structured way to manage data in frontend applications, simplifying operations such as data loading, storage, updating, and deletion. They abstract the interaction details with backend data services, allowing frontend developers to focus more on implementing business logic.
 
-**set list(value: Array<any>): void**  
-sets the local list to the specified value.
+### Usage:
+* First, create the appropriate data service class (e.g., `MyDataService`, `MyFullListDataService`, `MyPagingDataService`) based on the specific data service type.
+* Then, inherit from the corresponding data manager class (e.g., `BaseDataManager`, `FullListDataManager`, `PagedDataManager`, `StackDataManager`) and implement necessary methods (e.g., `processDataResult`).
+* When creating a data manager instance, pass in the data service instance and the `checkEqual` function.
+* Use the methods provided by the data manager to load, save, delete, and update data.
+* For paginated data managers, set query conditions, page numbers, and rows per page to perform paginated queries.
+* For stacked data managers, use the `loadMore` and `hasMore` methods to implement lazy loading.
 
-## Common Pagination Data Manager
-This module provides a CommonPaginationDataManager class that extends the BaseDataManager class. It is used for managing data that can be displayed on a paginated table.
+### Overall
+This library provides a flexible and extensible data management solution, allowing developers to choose the appropriate manager class based on different data management needs. It simplifies the complexity of frontend data management, improving development efficiency and code quality.
 
+### Related Documents
 
-Usage
-To use this module, first import the CommonPaginationDataManager class and any required dependencies:
-```typescript
-import {BaseDataManager, DataConvert} from "@ticatec/app-data-manager";
-import type {CheckEqual} from "@ticatec/data-manager";
-import type {CommonPaginationDataService} from "@ticatec/app-data-manager";
-import {utils} from "@ticatec/enhanced-utils";
-```
-Then, extend the CommonPaginationDataManager class and implement the processDataResult method:
-```typescript
-export default abstract class CommonPaginationDataManager<T extends CommonPaginationDataService> extends BaseDataManager<T> {
-    
-    constructor(service:T, checkEqual: CheckEqual, convert?: DataConvert) {
-        super(service, checkEqual, convert);
-    }
-}
-
-```
-
-### Methods
-The CommonPaginationDataManager class provides the following methods:
-
-**setRowsPerPage(value: number)**: 
-sets the number of rows per page.
-
-**searchData(criteria: any, pageNo: number = 1)**: 
-searches for data based on the specified criteria and page number.
-
-**setPageNo(value: number)**: 
-sets the current page number to the specified value.
-
-**initialize()**: 
-initializes the data manager.
-
-**resetSearch()**: 
-resets the search criteria.
-
-**search(criteria)**: 
-searches for data based on the specified criteria.
-
-**refresh()**: 
-refreshes the data.
-
-**getPageNo():number**: 
-gets the current page number.
-
-**getPageCount(): number**: 
-gets the total number of pages.
-
-**getPageCount():number:**  
-the total number of pages.
-
-### Properties
-The CommonPaginationDataManager class provides the following properties:
-
-**criteria**: the current search criteria.
+* [Base Data Manager](./README-BASE.md)
+* [Full Dataset Manager](./README-FULL.md)
+* [Paged Data Collection Manager](./README-PAGED.md)
 
 
-## StackDataManager
+## Dependencies
 
-StackDataManager is an abstract class that extends CommonPaginationDataManager and adds the ability to load more data from the server.
+* [app-data-service](https://www.npmjs.com/package/@ticatec/app-data-service)
 
-### Usage
+## Contributions
 
-```typescript
-import {StackDataManager} from "@ticatec/app-data-manager";
-import type {CheckEqual} from "@ticatec/app-data-manager";
-import type {CommonPaginationDataService} from "@ticatec/app-data-manager";
+Issues and pull requests are welcome.
 
-class ExampleDataManager extends StackDataManager<CommonPaginationDataService> {
-    constructor(service: CommonPaginationDataService, checkEqual: CheckEqual) {
-        super(service, checkEqual);
-    }
-}
-```
+## Copyright
 
-### API
+Copyright © 2023 Ticatec. All rights reserved.
 
-**constructor(service: T, checkEqual: CheckEqual, convert?: DataConvert)**
-Constructs a new StackDataManager instance.  
-**service** - The service to use for querying data.  
-**checkEqual** - The function to use for comparing two objects.  
-**convert** - The function to use for converting data from the server.  
+This library is released under the MIT License. For more details about the license, please refer to the [LICENSE](LICENSE) file.
 
-#### methods
+## Contact
 
-**loadMore(): Promise<void>**
-Loads the next page of data from the server.
+huili.f@gmail.com
 
-**hasMore(): boolean**
-Returns a boolean indicating if there is more data to be loaded.
+https://github.com/henryfeng/app

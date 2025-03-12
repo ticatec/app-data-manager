@@ -3,6 +3,13 @@ import type {CommonDataService} from "@ticatec/app-data-service";
 export type CheckEqual = (e1: any, e2: any) => boolean;
 export type DataConvert = (item: any, isNew: boolean) => any
 
+export interface ManagerOptions {
+    checkEqual?: CheckEqual;
+    convert: DataConvert;
+    fromTop?: boolean;
+    tagData?: boolean;
+}
+
 export default abstract class BaseDataManager<T extends CommonDataService> {
 
     private _list: Array<any>;
@@ -15,12 +22,11 @@ export default abstract class BaseDataManager<T extends CommonDataService> {
     /**
      *
      * @param service
-     * @param checkEqual
      * @param options
      */
-    protected constructor(service: T, checkEqual: CheckEqual, options: any = null) {
+    protected constructor(service: T, keyField: string | CheckEqual, options: ManagerOptions = null) {
         this.service = service;
-        this.checkEqual = checkEqual;
+        this.checkEqual = typeof keyField == "string" ? ((o1: any, o2: any) => o1[keyField] == o2[keyField]) : keyField;
         this.convert = options?.convert;
         this.fromTop = options?.fromTop ?? true;
         this.tagData = options?.tagData;

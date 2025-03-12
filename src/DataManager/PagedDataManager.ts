@@ -5,8 +5,8 @@ import CommonPagedDataManager from "./CommonPagedDataManager";
 export default class PagedDataManager<T extends PagingDataService> extends CommonPagedDataManager<T> {
 
 
-    constructor(service:T, checkEqual: CheckEqual, options: any = null) {
-        super(service, checkEqual, options);
+    constructor(service:T, keyField: string | CheckEqual, options: any = null) {
+        super(service, keyField, options);
     }
 
     protected processDataResult(result: any): void {
