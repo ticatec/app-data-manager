@@ -1,13 +1,13 @@
+import "@ticatec/enhanced-utils/EnArray";
 import type {CommonDataService} from "@ticatec/app-data-service";
 
 export type CheckEqual = (e1: any, e2: any) => boolean;
 export type DataConvert = (item: any, isNew: boolean) => any
 
 export interface ManagerOptions {
-    checkEqual?: CheckEqual;
-    convert: DataConvert;
+    convert?: DataConvert;
     fromTop?: boolean;
-    tagData?: boolean;
+    tagData?: any;
 }
 
 export default abstract class BaseDataManager<T extends CommonDataService> {

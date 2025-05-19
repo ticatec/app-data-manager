@@ -26,7 +26,7 @@ export default abstract class CommonPagedDataManager<T extends PagingDataService
         super(service, keyField, options);
         this.list = [];
         this.#rows = CommonPagedDataManager.rowsCount;
-        this.#criteria = service.buildCriteria(this.tagData);
+        this.#criteria = {};
     }
 
     /**
@@ -123,16 +123,17 @@ export default abstract class CommonPagedDataManager<T extends PagingDataService
 
     /**
      * 重置查询条件
+     * @deprecated
      */
     resetCriteria(): any {
-        return this.service.buildCriteria(this.tagData);
+        return this.buildCriteria();
     }
 
     /**
      * 重置条件查询
      */
     async resetSearch(): Promise<void> {
-        await this.searchData(this.service.buildCriteria(this.tagData));
+        await this.searchData(this.buildCriteria());
     }
 
     /**
@@ -146,6 +147,7 @@ export default abstract class CommonPagedDataManager<T extends PagingDataService
     /**
      * 设置查询条件
      * @param criteria
+     * @deprecated
      */
     async setCriteria(criteria: any): Promise<void> {
         await this.searchData(criteria);
@@ -183,6 +185,10 @@ export default abstract class CommonPagedDataManager<T extends PagingDataService
      */
     get count(): number {
         return this.#count;
+    }
+
+    protected buildCriteria() {
+        return {...this.tagData}
     }
 
 }
