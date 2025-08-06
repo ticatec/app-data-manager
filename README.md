@@ -1,85 +1,399 @@
-# Data Manager
+# App Data Manager
+
+[![npm version](https://badge.fury.io/js/@ticatec%2Fapp-data-manager.svg)](https://badge.fury.io/js/@ticatec%2Fapp-data-manager)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [中文文档](./README-CN.md)
 
-This library provides a series of data managers to simplify data management and operations in frontend applications. It primarily includes the following core classes:
+A comprehensive TypeScript library that provides a hierarchical set of data manager classes for handling CRUD operations and paginated data retrieval via HTTP requests. This library simplifies data management in frontend applications by abstracting the complexity of data operations and providing a structured approach to managing different types of datasets.
 
-### Detailed Introduction
+## Features
 
-1. `BaseDataManager` **(Base Data Manager)**:
+- **Type-safe**: Full TypeScript support with comprehensive type definitions
+- **Hierarchical Architecture**: Well-structured inheritance hierarchy for different data management needs
+- **Pagination Support**: Built-in pagination handling with both standard and stackable pagination
+- **CRUD Operations**: Complete Create, Read, Update, Delete functionality
+- **Data Transformation**: Built-in data conversion and validation support
+- **Extensible**: Easy to extend and customize for specific use cases
+- **Dependency Injection**: Service-based architecture for better testability
 
-* This is an abstract base class for managing data collections.
-* It provides a series of common data operation methods, such as saving, deleting, replacing, and appending data.
-* It relies on `CommonDataService` to interact with backend data services.
-* It uses the `checkEqual` function to compare the equality of data items and allows data transformation via the `convert` function.
-* It is suitable for managing any type of data collection but requires subclasses to inherit and implement specific data service interaction logic.
+## Installation
 
-2. `FullListDataManager` **(Full List Data Manager)**:
+```bash
+npm install @ticatec/app-data-manager
+```
 
-* It inherits from `BaseDataManager` and is specifically designed to manage complete data lists.
-* It provides a `loadData` method to load all data from the backend data service in a single request.
-* It is suitable for scenarios where an entire dataset needs to be loaded at once, such as dropdown lists or static data displays.
+## Architecture Overview
 
-3. `CommonPagedDataManager` **(Common Paged Data Manager)**:
+The library is built on a hierarchical structure with the following core classes:
 
-* It inherits from `BaseDataManager` and is used to manage paginated data.
-* It provides a series of methods for querying paginated data, setting pagination parameters, and refreshing data.
-* It depends on `PagingDataService` to interact with backend data services that support pagination.
-* It requires subclasses to implement specific data processing logic through the abstract `processDataResult` method.
-* It is suitable for scenarios requiring paginated data loading, such as tables or list displays.
+```
+BaseDataManager (Abstract)
+├── FullListDataManager
+└── CommonPagedDataManager (Abstract)
+    ├── PagedDataManager
+    └── StackDataManager
+```
 
-4. `PagedDataManager` **(Paged Data Manager)**:
+## Core Classes
 
-* It inherits from `CommonPagedDataManager` and serves as a concrete paginated data manager.
-* It simplifies the use of `CommonPagedDataManager` and provides more direct property access, making it easier for developers to retrieve pagination information.
-* It overrides the `processDataResult` method to directly set the data list returned from the backend as the local data collection.
-* It provides convenient access to pagination information through the `pageCount` and `pageNo` properties.
-* It is suitable for most paginated data management scenarios, offering a simple and easy-to-use API.
+### 1. BaseDataManager
 
-5. `StackDataManager` **(Stacked Paged Data Manager)**:
+**Abstract base class** for managing data collections with common CRUD operations.
 
-* It inherits from `CommonPagedDataManager` and is used to manage stacked paginated data.
-* It provides `loadMore` and `hasMore` methods to implement logic for stacking and loading more data.
-* In the `processDataResult` method, it uses the `union` method to merge newly loaded data into the existing data collection, avoiding duplicates.
-* It is suitable for scenarios requiring "load more" or "infinite scrolling" with stacked paginated loading.
+**Key Features:**
+- Data collection management with local caching
+- CRUD operations with automatic local synchronization
+- Data transformation support via `convert` function
+- Equality checking via `checkEqual` function
+- Service-based architecture for data operations
 
-### Purpose:
-These data manager classes provide a structured way to manage data in frontend applications, simplifying operations such as data loading, storage, updating, and deletion. They abstract the interaction details with backend data services, allowing frontend developers to focus more on implementing business logic.
+**Properties:**
+- `service: CommonDataService` - Data service instance
+- `checkEqual: CheckEqual` - Function to compare data items
+- `convert?: DataConvert` - Optional data transformation function
+- `list: Array<any>` - Current dataset (read-only copy)
 
-### Usage:
-* First, create the appropriate data service class (e.g., `MyDataService`, `MyFullListDataService`, `MyPagingDataService`) based on the specific data service type.
-* Then, inherit from the corresponding data manager class (e.g., `BaseDataManager`, `FullListDataManager`, `PagedDataManager`, `StackDataManager`) and implement necessary methods (e.g., `processDataResult`).
-* When creating a data manager instance, pass in the data service instance and the `checkEqual` function.
-* Use the methods provided by the data manager to load, save, delete, and update data.
-* For paginated data managers, set query conditions, page numbers, and rows per page to perform paginated queries.
-* For stacked data managers, use the `loadMore` and `hasMore` methods to implement lazy loading.
+**Methods:**
+- `save(data: any, isNew: boolean): Promise<void>` - Save/update data
+- `remove(item: any): Promise<void>` - Delete data
+- `append(item: any): void` - Add item to beginning of list
+- `replace(item: any): void` - Replace existing item with matching key
+- `removeItem(item: any): void` - Remove item from local collection only
 
-### Overall
-This library provides a flexible and extensible data management solution, allowing developers to choose the appropriate manager class based on different data management needs. It simplifies the complexity of frontend data management, improving development efficiency and code quality.
+### 2. FullListDataManager
 
-### Related Documents
+**Concrete class** inheriting from `BaseDataManager` for managing complete datasets.
 
-* [Base Data Manager](./README-BASE.md)
-* [Full Dataset Manager](./README-FULL.md)
-* [Paged Data Collection Manager](./README-PAGED.md)
+**Use Cases:**
+- Dropdown lists
+- Static reference data
+- Small to medium-sized complete datasets
+- Configuration lists
 
+**Constructor:**
+```typescript
+protected constructor(
+  service: T, 
+  keyField: string | CheckEqual, 
+  options: ManagerOptions = null
+)
+```
+
+**Additional Methods:**
+- `loadData(): Promise<void>` - Load complete dataset from service using tagData as filter conditions
+
+**Example:**
+```typescript
+import { FullListDataManager } from '@ticatec/app-data-manager';
+import { MyFullListDataService } from './services';
+
+class CategoryManager extends FullListDataManager<MyFullListDataService> {
+  constructor() {
+    super(
+      new MyFullListDataService(), 
+      'id', 
+      {
+        tagData: { status: 'active', type: 'public' } // filter conditions for getList
+      }
+    );
+  }
+}
+
+const manager = new CategoryManager();
+await manager.loadData(); // Uses tagData as filter conditions
+console.log(manager.list); // Filtered category list
+```
+
+### 3. CommonPagedDataManager
+
+**Abstract base class** for paginated data management with comprehensive pagination support.
+
+**Constructor:**
+```typescript
+protected constructor(
+  service: T, 
+  keyField: string | CheckEqual, 
+  options: any = null
+)
+```
+
+**Key Features:**
+- Pagination state management (pageNo, pageCount, totalCount)
+- Query criteria handling with tagData-based initialization
+- Configurable pagination parameters
+- Abstract `processDataResult` method for custom data processing
+
+**Static Configuration:**
+- `CommonPagedDataManager.setRowsPerPage(25)` - Set default rows per page
+- `CommonPagedDataManager.setRowsKey('rows')` - Set rows parameter name
+- `CommonPagedDataManager.setPageNoKey('page')` - Set page parameter name
+
+**Properties:**
+- `criteria: any` - Current query criteria (initialized from options.tagData or empty object)
+- `count: number` - Total record count
+
+**Methods:**
+- `search(criteria: any): Promise<void>` - Search with criteria
+- `setPageNo(pageNo: number): Promise<void>` - Navigate to specific page
+- `setRowsPage(rows: number): Promise<void>` - Change page size
+- `refresh(): Promise<void>` - Refresh current data
+- `resetSearch(): Promise<void>` - Reset to default criteria
+
+### 4. PagedDataManager
+
+**Concrete implementation** of `CommonPagedDataManager` for standard pagination.
+
+**Use Cases:**
+- Data tables with pagination
+- Search results with page navigation
+- Standard paginated lists
+
+**Additional Properties:**
+- `pageCount: number` - Total number of pages
+- `pageNo: number` - Current page number
+
+**Data Processing:**
+- Replaces entire dataset with new page data
+- Simple and straightforward pagination
+
+**Constructor:**
+```typescript
+constructor(
+  service: T, 
+  keyField: string | CheckEqual, 
+  options: any = null
+)
+```
+
+**Example:**
+```typescript
+import { PagedDataManager } from '@ticatec/app-data-manager';
+import { MyPagingDataService } from './services';
+
+class UserManager extends PagedDataManager<MyPagingDataService> {
+  constructor() {
+    super(
+      new MyPagingDataService(), 
+      'userId',
+      {
+        tagData: { status: 'active' } // default criteria via tagData
+      }
+    );
+  }
+}
+
+const manager = new UserManager();
+// Will search with default criteria from tagData { status: 'active' }
+await manager.resetSearch(); 
+console.log(`Page ${manager.pageNo} of ${manager.pageCount}`);
+console.log(`Total users: ${manager.count}`);
+console.log(manager.list); // Current page users
+
+// Navigate to next page
+await manager.setPageNo(2);
+
+// Search with additional criteria
+await manager.search({ status: 'active', role: 'admin' });
+```
+
+### 5. StackDataManager
+
+**Concrete implementation** of `CommonPagedDataManager` for stackable pagination ("infinite scroll").
+
+**Use Cases:**
+- Social media feeds
+- Infinite scroll implementations
+- "Load More" functionality
+- Progressive data loading
+
+**Key Features:**
+- Accumulates data across pages
+- Automatic duplicate prevention using `union` method
+- `loadMore()` and `hasMore()` methods for progressive loading
+
+**Additional Methods:**
+- `loadMore(): Promise<void>` - Load next page and append to existing data
+- `hasMore(): boolean` - Check if more pages are available
+
+**Data Processing:**
+- Merges new data with existing dataset
+- Prevents duplicates using `checkEqual` function
+
+**Constructor:**
+```typescript
+constructor(
+  service: T, 
+  keyField: string | CheckEqual, 
+  options: any = null
+)
+```
+
+**Example:**
+```typescript
+import { StackDataManager } from '@ticatec/app-data-manager';
+import { MyPagingDataService } from './services';
+
+class FeedManager extends StackDataManager<MyPagingDataService> {
+  constructor() {
+    super(
+      new MyPagingDataService(), 
+      'postId',
+      {
+        tagData: { category: 'technology' } // default criteria via tagData
+      }
+    );
+  }
+}
+
+const manager = new FeedManager();
+// Will search with default criteria from tagData { category: 'technology' }
+await manager.resetSearch();
+
+// Load more content
+while (manager.hasMore()) {
+  await manager.loadMore();
+  console.log(`Loaded ${manager.list.length} posts`);
+}
+
+// Search with different criteria
+await manager.search({ category: 'science', featured: true });
+```
+
+## Type Definitions
+
+### CheckEqual
+```typescript
+type CheckEqual = (e1: any, e2: any) => boolean;
+```
+Function to determine if two data items are equal (typically by comparing primary keys).
+
+### DataConvert
+```typescript
+type DataConvert = (item: any, isNew: boolean) => any;
+```
+Optional function to transform data items during save/load operations.
+
+### ManagerOptions
+```typescript
+interface ManagerOptions {
+  convert?: DataConvert;    // Data transformation function
+  fromTop?: boolean;        // Add new items to top of list (default: true)
+  tagData?: any;           // Default query criteria/filter conditions
+}
+```
+
+**tagData Usage:**
+- **For paginated managers**: Used as default query criteria for searches
+- **For FullListDataManager**: Used as filter conditions for the getList method
+
+## Advanced Usage
+
+### Custom Data Manager
+
+```typescript
+import { BaseDataManager } from '@ticatec/app-data-manager';
+
+class CustomDataManager extends BaseDataManager<MyDataService> {
+  constructor(service: MyDataService) {
+    super(service, 'id', {
+      convert: (item, isNew) => ({
+        ...item,
+        timestamp: isNew ? Date.now() : item.timestamp
+      }),
+      fromTop: true
+    });
+  }
+  
+  // Custom business logic
+  async archiveItem(item: any): Promise<void> {
+    const archived = { ...item, archived: true };
+    await this.save(archived, false);
+  }
+}
+```
+
+### Service Implementation Example
+
+```typescript
+import { PagingDataService } from '@ticatec/app-data-service';
+
+class MyPagingService extends PagingDataService {
+    constructor() {
+        super('/api/users');
+    }
+}
+```
+
+## Best Practices
+
+1. **Choose the Right Manager:**
+   - Use `FullListDataManager` for small, static datasets
+   - Use `PagedDataManager` for traditional paginated tables
+   - Use `StackDataManager` for infinite scroll or feed-like interfaces
+
+2. **Implement Proper Equality Checking:**
+   ```typescript
+   // Good: Use unique identifiers
+   const manager = new PagedDataManager(service, 'id');
+   
+   // Better: Custom comparison for complex keys
+   const manager = new PagedDataManager(service, (a, b) => 
+     a.companyId === b.companyId && a.userId === b.userId
+   );
+   ```
+
+3. **Handle Errors Gracefully:**
+   ```typescript
+   try {
+     await manager.search({ query: 'user input' });
+   } catch (error) {
+     console.error('Search failed:', error);
+     // Handle error appropriately
+   }
+   ```
+
+4. **Use Data Conversion for Consistency:**
+   ```typescript
+   const options = {
+     convert: (item, isNew) => ({
+       ...item,
+       createdAt: isNew ? new Date().toISOString() : item.createdAt,
+       updatedAt: new Date().toISOString()
+     })
+   };
+   ```
 
 ## Dependencies
 
-* [app-data-service](https://www.npmjs.com/package/@ticatec/app-data-service)
+- **[@ticatec/app-data-service](https://www.npmjs.com/package/@ticatec/app-data-service)** - Data service interfaces and base implementations
+- **[@ticatec/enhanced-utils](https://www.npmjs.com/package/@ticatec/enhanced-utils)** - Utility functions including array extensions
 
-## Contributions
+## Browser Support
 
-Issues and pull requests are welcome.
+- Chrome/Edge 88+
+- Firefox 85+
+- Safari 14+
+- Node.js 14+
 
-## Copyright
+## Contributing
+
+Issues and pull requests are welcome. Please ensure:
+
+1. All tests pass
+2. Code follows TypeScript best practices
+3. Documentation is updated for new features
+4. Examples are provided for new functionality
+
+## License
 
 Copyright © 2023 Ticatec. All rights reserved.
 
-This library is released under the MIT License. For more details about the license, please refer to the [LICENSE](LICENSE) file.
+This library is released under the MIT License. See [LICENSE](LICENSE) file for details.
 
 ## Contact
 
-huili.f@gmail.com
-
-https://github.com/henryfeng/app
+- **Email:** huili.f@gmail.com
+- **GitHub:** https://github.com/ticatec/app-data-manager
+- **Issues:** https://github.com/ticatec/app-data-manager/issues

@@ -1,38 +1,70 @@
 {
   "name": "@ticatec/app-data-manager",
-  "version": "1.0.7",
+  "version": "1.2.0",
   "type": "module",
-  "description": "A set of data manager classes for handling CRUD operations and paginated data retrieval via HTTP requests, built on a hierarchical structure with base, common, and stack data manager implementations.",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "description": "A comprehensive TypeScript library providing hierarchical data manager classes for CRUD operations, pagination, and data management in frontend applications. Features include full list, paged, and stackable data managers with built-in caching and transformation support.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
-    "clean": "rm -rf ./dist",
-    "build": "npm run clean && tsc && cp ./package.json ./dist/",
-    "publish:public": "cp *.md ./dist && cd ./dist && npm publish --access public"
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepare": "npm run clean && npm run build",
+    "publish:public": "npm publish --access public"
   },
   "keywords": [
     "data-manager",
-    "http",
+    "typescript",
     "crud",
     "pagination",
+    "frontend",
     "data-service",
     "api",
-    "typescript"
+    "http",
+    "caching",
+    "infinite-scroll",
+    "stack-data",
+    "paged-data",
+    "data-transformation",
+    "web-development"
   ],
   "dependencies": {
-    "@ticatec/enhanced-utils": "^1.0.1",
-    "@ticatec/app-data-service": "^1.0.3"
+    "@ticatec/enhanced-utils": "^1.0.1"
   },
   "devDependencies": {
+    "@ticatec/app-data-service": "^1.1.0",
+    "@ticatec/restful_service_api": "^0.1.5"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.5.0"
   },
   "repository": {
-    "type": "https",
+    "type": "git",
     "url": "https://github.com/ticatec/app-data-manager.git"
   },
   "bugs": {
     "url": "https://github.com/ticatec/app-data-manager/issues"
   },
   "homepage": "https://github.com/ticatec/app-data-manager",
-  "author": "Henry Feng",
-  "license": "MIT"
+  "author": {
+    "name": "Henry Feng",
+    "email": "huili.f@gmail.com"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "README-CN.md",
+    "LICENSE"
+  ]
 }
